@@ -99,3 +99,26 @@ jobs:
             context: .
             push: false
             tags: ghcr.io/${{ steps.string.outputs.lowercase }}/solar-system:${{ github.sha }}
+
+    dev-deploy:
+      needs: docker
+      environment: development
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v4 
+
+        - name: Install Kubectl
+          uses: azure/setup-kubectl@v4
+          with:
+            version: 'v1.26.0'
+          
+        - name: Set Kube context
+          uses: azure/k8s-set-context@v4
+          with:
+            method: kubeconfig
+            kubeconfig: ${{ secrets.KUBECONFIG }}
+
+        - name: Verify Kubectl install and Kube context
+          run: |
+            kubectl version --short -o yaml
